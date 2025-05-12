@@ -6,5 +6,5 @@
 /build/
 
 # Traning
-model_training/
+model_train/
 __pycache__/
