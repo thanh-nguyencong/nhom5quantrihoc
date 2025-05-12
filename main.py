@@ -9,6 +9,7 @@ import jinja2
 import jwt
 import numpy as np
 from fastapi import FastAPI
+import logging
 from starlette.middleware.cors import CORSMiddleware
 from starlette.requests import Request
 from starlette.exceptions import HTTPException
@@ -19,7 +20,8 @@ from student import Student
 
 
 app = FastAPI()
-
+logger = logging.getLogger('uvicorn.error')
+logger.setLevel(logging.DEBUG)
 students = []
 with open("class.csv") as class_file:
     for line in csv.reader(class_file):
@@ -89,7 +91,7 @@ async def request_email_verification(request: Request):
         one_time_token,
         verification_code
     )
-    print(f"Sending email to {student.email} with verification code {verification_code} with origin {ui_url}")
+    logger.debug(f"Sending email to {student.email} with verification code {verification_code} with origin {ui_url}")
     send(body_email, "Xác thực email cho trò chơi Đánh lừa AI, nhóm 5 Quản trị học", email_template.render(
         first_name=student.first_name,
         verification_link_1=f"{ui_url}/verify_email?email={student.email}&name={student.first_name}&verification_code={numbers[0]}&one_time_token={one_time_token}",
