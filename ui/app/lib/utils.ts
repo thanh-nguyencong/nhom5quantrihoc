@@ -10,5 +10,5 @@ export function isDev() {
 }
 
 export function serverUrl() {
-  return isDev() ? "http://localhost:8000" : "https://nhom5quantrihoc-server.thinghives.com"
+  return isDev() ? "http://localhost:8000" : "http://18.143.200.208:8000"
 }
