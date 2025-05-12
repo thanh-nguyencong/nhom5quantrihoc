@@ -28,6 +28,7 @@ with open("class.csv") as class_file:
 app_url = None
 # dev will be dev, prod will be run
 is_prod = sys.argv[1] == "run"
+print(f"Is production: {is_prod}")
 with open(".env") as env_file:
     for line in env_file:
         if is_prod and line.startswith("PRD_APP_URL="):
@@ -36,6 +37,7 @@ with open(".env") as env_file:
         elif not is_prod and line.startswith("DEV_APP_URL="):
             app_url = line.split("=")[1].strip()
             break
+print(f"App url: {app_url}")
 
 ui_url = None
 with open(".env") as env_file:
@@ -46,6 +48,7 @@ with open(".env") as env_file:
         elif not is_prod and line.startswith("DEV_UI_URL="):
             ui_url = line.split("=")[1].strip()
             break
+print(f"UI url: {ui_url}")
 
 origins = [
     ui_url,
