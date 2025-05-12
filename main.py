@@ -89,7 +89,7 @@ async def request_email_verification(request: Request):
         one_time_token,
         verification_code
     )
-    print(f"Sending email to {student.email} with verification code {verification_code}")
+    print(f"Sending email to {student.email} with verification code {verification_code} with origin {ui_url}")
     send(body_email, "Xác thực email cho trò chơi Đánh lừa AI, nhóm 5 Quản trị học", email_template.render(
         first_name=student.first_name,
         verification_link_1=f"{ui_url}/verify_email?email={student.email}&name={student.first_name}&verification_code={numbers[0]}&one_time_token={one_time_token}",
