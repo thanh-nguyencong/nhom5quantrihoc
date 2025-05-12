@@ -6,7 +6,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function isDev() {
-    return false && process.env.NODE_ENV === "development"
+    return true
 }
 
 export function serverUrl() {

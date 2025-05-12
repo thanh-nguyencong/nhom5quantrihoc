@@ -29,18 +29,18 @@ export const links: Route.LinksFunction = () => [
 export function Layout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
-      <head>
-        <meta charSet="utf-8" />
-        <title>Nhóm 5 - Quản trị học</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <Meta />
-        <Links />
-      </head>
-      <body className={"h-[100vh]"}>
-        {children}
-        <ScrollRestoration />
-        <Scripts />
-      </body>
+    <head>
+      <meta charSet="utf-8"/>
+      <title>Nhóm 5 - Quản trị học</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1"/>
+      <Meta/>
+      <Links/>
+    </head>
+    <body className={"h-[100vh]"}>
+    {children}
+    <ScrollRestoration/>
+    <Scripts/>
+    </body>
     </html>
   );
 }
@@ -55,10 +55,10 @@ const queryClient = new QueryClient({
 
 export default function App() {
   return <ThemeProvider defaultTheme="dark" storageKey="nhom5quantrihoc-vite-ui-theme">
-      <QueryClientProvider client={queryClient}>
-        <Outlet />
-     </QueryClientProvider>
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <Outlet/>
+    </QueryClientProvider>
+  </ThemeProvider>
 
 }
 

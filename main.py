@@ -191,29 +191,11 @@ async def test_submission(request: Request):
     return model(matrix)
 
 
-@app.post("/analyze_digit")
-async def analyze_digit(request: Request):
-    headers = request.headers
-    encoded_jwt = headers.get("Authorization")
-    decoded_jwt = jwt.decode(encoded_jwt, APP_SECRET, algorithms=["HS256"])
-    if "email" not in decoded_jwt:
-        raise HTTPException(status_code=401, detail="Hệ thống không biết bạn là ai, xin đăng nhập lại")
-    email = decoded_jwt.get("email")
-    student = None
-    for s in students:
-        if s.email == email:
-            student = s
-            break
-    body = request.json()
-    # body is a 28 x 28 binary matrix representing mnist digits
-    # turn it into numpy to let the prediction model work on it
-    matrix = np.array(body)
-
-
-
-
-
-@app.post("/puzzle")
-async def post_puzzle(request: Request):
-    """Submit the result for a puzzle"""
-    return {"message": "Hello World"}
+@app.post("/submit")
+async def submit(request: Request):
+    body = await request.json()
+    if "submission" not in body:
+        raise HTTPException(status_code=400, detail="Missing submission")
+    submission = body.get("submission")
+    matrix = np.array(submission)
+    return model(matrix)

@@ -1,5 +1,5 @@
 import {Button} from "~/components/ui/button";
-import {type MouseEvent, TouchEvent, useRef, useState} from "react";
+import {type MouseEvent, type TouchEvent, useRef, useState} from "react";
 import axios from "axios";
 import {serverUrl} from "~/lib/utils";
 import {Trash} from "lucide-react";
@@ -97,6 +97,10 @@ export default function Training() {
         }
     };
 
+    const handleGoToGame = () => {
+        window.open("/game", "_self")!.focus()
+    }
+
     return <div className={"flex flex-col justify-center items-center pt-4"}>
         <div className={"flex flex-col items-center space-y-2"}>
             <h1 className={"font-semibold text-lg text-foreground"}>Luyện tập</h1>
@@ -152,8 +156,8 @@ export default function Training() {
             <Button
                 className={"col-[1/span_2]"}
                 variant={"link"}
+                onClick={handleGoToGame}
             >Vào trò chơi chính</Button>
         </div>
-
     </div>
 }
