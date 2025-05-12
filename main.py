@@ -12,8 +12,8 @@ from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 from starlette.requests import Request
 from starlette.exceptions import HTTPException
+from tensorflow.keras.models import load_model
 
-import mnist_model
 from mail import send
 from student import Student
 
@@ -177,8 +177,7 @@ async def get_students():
     await asyncio.sleep(1)
     return students
 
-
-model = mnist_model.MnistModel().load("model.json")
+model = load_model("mnist_tf_model.h5")
 
 
 @app.post("/test_submission")
@@ -188,7 +187,14 @@ async def test_submission(request: Request):
         raise HTTPException(status_code=400, detail="Missing submission")
     submission = body.get("submission")
     matrix = np.array(submission)
-    return model(matrix)
+    result = model(np.array([matrix]).reshape(-1, 784))[0]
+    result = np.array(result)
+    prediction = int(np.argmax(result))
+    confidence = float(result[prediction])
+    return {
+        "prediction": prediction,
+        "confidence": confidence,
+    }
 
 
 @app.post("/submit")
@@ -198,4 +204,11 @@ async def submit(request: Request):
         raise HTTPException(status_code=400, detail="Missing submission")
     submission = body.get("submission")
     matrix = np.array(submission)
-    return model(matrix)
+    result = model(np.array([matrix]).reshape(-1, 784))[0]
+    result = np.array(result)
+    prediction = int(np.argmax(result))
+    confidence = float(result[prediction])
+    return {
+        "prediction": prediction,
+        "confidence": confidence,
+    }
