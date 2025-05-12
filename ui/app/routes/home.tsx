@@ -92,6 +92,11 @@ export default function Home() {
         </div>
     }
 
+    if (error) {
+        console.log(error.message)
+        return <div>Error</div>
+    }
+
     return <div className={"flex flex-col items-center justify-center pt-4"}>
         <div className={"w-[20rem] flex flex-col items-center"}>
             <h1 className={"text-xl font-semibold mb-4"}>Xác thực</h1>
