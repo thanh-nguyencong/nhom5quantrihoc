@@ -48,7 +48,8 @@ with open(".env") as env_file:
             break
 
 origins = [
-    ui_url
+    ui_url,
+    "*"
 ]
 
 app.add_middleware(
