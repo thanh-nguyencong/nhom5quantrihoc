@@ -32,7 +32,7 @@ MarkupSafe==3.0.2
 mdurl==0.1.2
 ml_dtypes==0.5.1
 namex==0.0.9
-numpy==2.2.5
+numpy
 opt_einsum==3.4.0
 optree==0.15.0
 packaging==25.0
@@ -55,7 +55,7 @@ six==1.17.0
 sniffio==1.3.1
 soupsieve==2.7
 starlette==0.46.2
-tensorflow==2.19.0
+tensorflow
 termcolor==3.1.0
 typer==0.15.3
 typing-inspection==0.4.0
