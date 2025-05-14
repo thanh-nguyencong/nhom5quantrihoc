@@ -388,3 +388,32 @@ async def get_ranking(request: Request):
         }, students_with_scores)), key=lambda rank: rank["score"], reverse=True)
     }
 
+
+@app.post("/clear_all_submissions")
+async def clear_all_submissions(request: Request):
+    student = await get_student(request)
+    if student.group != '5':
+        raise HTTPException(status_code=403, detail="Forbidden, not a member of group 5.")
+    for s in students:
+        s.submissions = []
+    return {
+        "ok": True
+    }
+
+
+@app.post("/clear_submissions")
+async def clear_submission(request: Request):
+    student = await get_student(request)
+    if student.group != '5':
+        raise HTTPException(status_code=403, detail="Forbidden, not a member of group 5.")
+
+    body = await request.json()
+    if "email" not in body:
+        raise HTTPException(status_code=400, detail="Missing email")
+    email = body.get("email")
+    for s in students:
+        if s.email == email:
+            s.submissions = []
+            return {
+                "email": email
+            }
