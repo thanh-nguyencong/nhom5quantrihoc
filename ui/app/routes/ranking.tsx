@@ -53,7 +53,7 @@ export default function Ranking() {
             <TableBody>
                 {ranking.map((rank) => (
                     <TableRow key={rank.email}>
-                        <TableCell>{rank.name}</TableCell>
+                        <TableCell>{rank.name} {ranking.slice(0, 3).includes(rank) ? "⭐" : ""}</TableCell>
                         <TableCell>{rank.group}</TableCell>
                         <TableCell>{rank.scaled_score}</TableCell>
                         <TableCell>{rank.score.toFixed(2)}</TableCell>
