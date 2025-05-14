@@ -3,6 +3,14 @@ import csv
 from bs4 import BeautifulSoup
 
 
+class Submission:
+    def __init__(self, timestamp_milliseconds, submission, prediction, confidence):
+        self.timestamp_milliseconds = timestamp_milliseconds
+        self.submission = submission
+        self.prediction = prediction
+        self.confidence = confidence
+
+
 class Student:
     """<span>STT</span>
 <span>Mã sinh viên</span>
@@ -23,6 +31,11 @@ class Student:
         self.class_id = class_id
         self.email = email
         self.group = group
+        self.begin_challenge_timestamp_milliseconds = None
+        self.test_submissions = []
+        self.submissions = []
+        self.evaluated = False
+        self.ground_truth = False
 
     # iter
     def __iter__(self):
@@ -34,9 +47,14 @@ class Student:
         yield self.class_id
         yield self.email
         yield self.group
+        yield self.test_submissions
+        yield self.submissions
+        yield self.evaluated
+        yield self.ground_truth
 
     def __repr__(self):
         return f"{self.student_id} {self.name} {self.first_name} {self.date_of_birth} {self.place_of_birth} {self.class_id} {self.email} {self.group}"
+
 
 if __name__ == "__main__":
     with (open("class.html", "r") as f):

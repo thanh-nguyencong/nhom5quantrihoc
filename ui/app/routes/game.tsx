@@ -1,15 +1,97 @@
 import {Button} from "~/components/ui/button";
 import {type MouseEvent, type TouchEvent, useRef, useState} from "react";
 import axios from "axios";
-import {serverUrl} from "~/lib/utils";
+import {checkAuthenticationStatus, ErrorPage, serverUrl} from "~/lib/utils";
 import {Trash} from "lucide-react";
 import {Separator} from "~/components/ui/separator";
+import {useSuspenseQuery} from "@tanstack/react-query";
+import {Skeleton} from "~/components/ui/skeleton";
+
+function redirectToRankingBecauseSubmissionNotAllowed() {
+    alert("Hiện tại AI đang mệt, bạn theo dõi bảng xếp hạng nha!")
+    window.open("/ranking", "_self")!.focus()
+}
 
 export default function Game() {
+    const { data: isAuthenticated, isLoading: isAuthenticatedLoading } = useSuspenseQuery({
+        queryKey: ["is_authenticated"],
+        queryFn: async () => {
+            return await checkAuthenticationStatus()
+        }
+    })
+    if (isAuthenticatedLoading)
+    {
+        return <div className={"space-y-1"}>
+            <Skeleton className="h-4 w-[250px]"/>
+            <Skeleton className="h-8 w-[300px]"/>
+            <Skeleton className="h-6 w-[100px]"/>
+        </div>
+    }
+    if (!isAuthenticated)
+    {
+        window.open("/", "_self")!.focus()
+    }
+
     const [matrix, setMatrix] = useState<number[][]>(() =>
         Array.from({length: 28}, () => Array(28).fill(0)) // Initialize a 28x28 matrix with values set to 0
     );
-    const [predictionResponse, setPredictionResponse] = useState<{ prediction: number, confidence: number }>({
+
+    const { data, error, isPending } = useSuspenseQuery({
+        queryKey: ["begin_challenge"],
+        queryFn: async () => {
+            try {
+                const response = await axios.get(`${serverUrl()}/begin_challenge`, {
+                    headers: {
+                        "Authorization": localStorage.getItem("jwt")
+                    }
+                })
+                const { data, status } = response
+                if (status !== 200) {
+                    return false
+                }
+                return data
+            } catch (e) {
+                if (e && axios.isAxiosError(e) && e.response!.data.detail.includes("submissions are not allowed")) {
+                    redirectToRankingBecauseSubmissionNotAllowed()
+                }
+                if (e && axios.isAxiosError(e) && e.response!.data.detail.includes("your challenge has begun")) {
+                    return { ok: false }
+                }
+                throw e
+            }
+        }
+    })
+
+    if (isPending) {
+        return <Skeleton className={"my-4"}/>
+    }
+
+    if (error && axios.isAxiosError(error)) {
+        return ErrorPage(error.response!.data.detail)
+    }
+
+    const { data: isSubmissionAllowed, error: isSubmissionAllowedError, isPending: isSubmissionAllowedIsPending } = useSuspenseQuery({
+        queryKey: ["is_submission_allowed"],
+        queryFn: async () => {
+            const { data, status } = await axios.get(`${serverUrl()}/is_submission_allowed`)
+            if (status !== 200) {
+                return false
+            }
+            return data.allowed
+        }
+    })
+
+    if (isSubmissionAllowedIsPending) {
+        return <Skeleton className={"my-4"}/>
+    }
+
+    if (!isSubmissionAllowed)
+    {
+        redirectToRankingBecauseSubmissionNotAllowed()
+    }
+
+    const [predictionResponse, setPredictionResponse] = useState<{ time_span: number, prediction: number, confidence: number }>({
+        time_span: -1,
         prediction: -1,
         confidence: 0,
     });
@@ -86,15 +168,24 @@ export default function Game() {
     // Handles the submission of the matrix
     const handleSubmit = async () => {
         setLoading(true);
-        const {data, status} = await axios.post(`${serverUrl()}/submit`, {
-            submission: matrix
-        });
-        if (status !== 200) {
-            alert("Gặp lỗi gì đó rồi, bạn liên hệ nhóm 5 để được hỗ trợ nha!")
-        } else {
-            setPredictionResponse(data);
-            setLoading(false);
+        try {
+            const {data, status} = await axios.post(`${serverUrl()}/submit`, {
+                submission: matrix
+            }, {
+                headers: {
+                    "Authorization": localStorage.getItem("jwt")
+                }
+            });
+            if (status === 200) {
+                setPredictionResponse(data);
+            }
+        } catch (e) {
+            if (e && axios.isAxiosError(e)) {
+                alert(`Đã có lỗi xảy ra, nội dung lỗi: ${e.response!.data.detail}`)
+            }
         }
+        setLoading(false);
+
     };
 
     const handleGoToGame = () => {
@@ -135,7 +226,7 @@ export default function Game() {
         </div>
         { predictionResponse.prediction !== -1 &&
             <div className={"w-[20rem] col-[1/span_2] dark:bg-accent p-2 mb-7 flex items-center justify-center border rounded-xl"}>
-                AI đã dự đoán kết quả là {predictionResponse.prediction}
+                Bạn khiến AI tự tin {Math.round(100 * predictionResponse.confidence)}% kết quả là {predictionResponse.prediction} trong vòng { predictionResponse.time_span > 1000 ? (predictionResponse.time_span / 1000).toFixed(2) : Math.round(predictionResponse.time_span) + " milliseconds"}
             </div> }
         <div className={"w-[20rem] grid grid-cols-[80%_20%] grid-rows-[10%_40%_50%] gap-x-2 gap-y-2"}>
             <Separator className={"mt-1 mb-4 w-full col-[1/span_2]"}/>
@@ -149,7 +240,7 @@ export default function Game() {
             <Button
                 onClick={() => {
                     setMatrix(Array.from({length: 28}, () => Array(28).fill(0)))
-                    setPredictionResponse({prediction: -1, confidence: 0})
+                    setPredictionResponse({time_span: -1, prediction: -1, confidence: 0})
                 }}
                 variant={"destructive"}
                 className={"col-2"}

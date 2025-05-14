@@ -1,7 +1,7 @@
 import {Button} from "~/components/ui/button";
 import {useQuery, useSuspenseQuery} from "@tanstack/react-query";
 import axios from "axios";
-import {serverUrl} from "~/lib/utils";
+import {checkAuthenticationStatus, ErrorPage, serverUrl} from "~/lib/utils";
 import {
     Select,
     SelectContent,
@@ -23,22 +23,6 @@ import {
 import {Skeleton} from "~/components/ui/skeleton";
 import {Separator} from "~/components/ui/separator";
 
-async function checkAuthenticationStatus()  {
-    const jwt = localStorage.getItem("jwt")
-    if (!jwt) {
-        return false
-    }
-    const {data, status} = await axios.get(`${serverUrl()}/is_authenticated`, {
-        headers: {
-            Authorization: jwt
-        }
-    })
-    if (status === 200) {
-        return data.is_authenticated
-    }
-    return false
-}
-
 async function requestEmailVerification(email: string) {
     const {data, status} = await axios.post(`${serverUrl()}/request_email_verification`, {
         email
@@ -49,7 +33,7 @@ async function requestEmailVerification(email: string) {
 }
 
 export default function Home() {
-    const { data: isAuthenticated, error: isAuthenticatedError, isLoading: isAuthenticatedLoading } = useSuspenseQuery({
+    const { data: isAuthenticated, isLoading: isAuthenticatedLoading } = useSuspenseQuery({
         queryKey: ["is_authenticated"],
         queryFn: async () => {
             return await checkAuthenticationStatus()
@@ -58,9 +42,9 @@ export default function Home() {
     if (isAuthenticatedLoading)
     {
         return <div className={"space-y-1"}>
-            <Skeleton className="h-4 w-[250px]"/>
-            <Skeleton className="h-8 w-[300px]"/>
-            <Skeleton className="h-6 w-[100px]"/>
+            <Skeleton className="h-6 w-[250px]"/>
+            <Skeleton className="h-10 w-[300px]"/>
+            <Skeleton className="h-8 w-[100px]"/>
         </div>
     }
     if (isAuthenticated)
@@ -86,15 +70,14 @@ export default function Home() {
 
     if (isLoading) {
         return <div className={"space-y-1"}>
-            <Skeleton className="h-4 w-[250px]"/>
-            <Skeleton className="h-8 w-[300px]"/>
-            <Skeleton className="h-6 w-[100px]"/>
+            <Skeleton className="h-6 w-[250px]"/>
+            <Skeleton className="h-10 w-[300px]"/>
+            <Skeleton className="h-8 w-[100px]"/>
         </div>
     }
 
-    if (error) {
-        console.log(error.message)
-        return <div>Error</div>
+    if (error && axios.isAxiosError(error)) {
+        return ErrorPage(error.response!.data.detail)
     }
 
     return <div className={"flex flex-col items-center justify-center pt-4"}>

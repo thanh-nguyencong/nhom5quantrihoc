@@ -10,7 +10,7 @@ import {
 import type { Route } from "./+types/root";
 import "./app.css";
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
-import {ThemeProvider, useTheme} from "~/components/ui/theme-provider";
+import {ThemeProvider} from "~/components/ui/theme-provider";
 import type {ReactNode} from "react";
 
 export const links: Route.LinksFunction = () => [
@@ -36,7 +36,7 @@ export function Layout({ children }: { children: ReactNode }) {
       <Meta/>
       <Links/>
     </head>
-    <body className={"h-[100vh]"}>
+    <body className={"min-h-[100vh] h-fit"}>
     {children}
     <ScrollRestoration/>
     <Scripts/>

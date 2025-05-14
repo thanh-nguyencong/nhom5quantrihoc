@@ -1,11 +1,32 @@
 import {Button} from "~/components/ui/button";
 import {type MouseEvent, type TouchEvent, useRef, useState} from "react";
-import axios from "axios";
-import {serverUrl} from "~/lib/utils";
+import axios, {type AxiosError} from "axios";
+import {checkAuthenticationStatus, serverUrl} from "~/lib/utils";
 import {Trash} from "lucide-react";
 import {Separator} from "~/components/ui/separator";
+import {useSuspenseQuery} from "@tanstack/react-query";
+import {Skeleton} from "~/components/ui/skeleton";
 
 export default function Training() {
+    const { data: isAuthenticated, isLoading: isAuthenticatedLoading } = useSuspenseQuery({
+        queryKey: ["is_authenticated"],
+        queryFn: async () => {
+            return await checkAuthenticationStatus()
+        }
+    })
+    if (isAuthenticatedLoading)
+    {
+        return <div className={"space-y-1"}>
+            <Skeleton className="h-4 w-[250px]"/>
+            <Skeleton className="h-8 w-[300px]"/>
+            <Skeleton className="h-6 w-[100px]"/>
+        </div>
+    }
+    if (!isAuthenticated)
+    {
+        window.open("/", "_self")!.focus()
+    }
+
     const [matrix, setMatrix] = useState<number[][]>(() =>
         Array.from({length: 28}, () => Array(28).fill(0)) // Initialize a 28x28 matrix with values set to 0
     );
@@ -86,15 +107,21 @@ export default function Training() {
     // Handles the submission of the matrix
     const handleSubmit = async () => {
         setLoading(true);
-        const {data, status} = await axios.post(`${serverUrl()}/test_submission`, {
-            submission: matrix
-        });
-        if (status !== 200) {
-            alert("Gặp lỗi gì đó rồi, bạn liên hệ nhóm 5 để được hỗ trợ nha!")
-        } else {
+        try {
+            const {data, status} = await axios.post(`${serverUrl()}/test_submission`, {
+                submission: matrix
+            }, {
+                headers: {
+                    "Authorization": localStorage.getItem("jwt")
+                }
+            });
             setPredictionResponse(data);
-            setLoading(false);
+        } catch (e) {
+            if (e && axios.isAxiosError(e)) {
+                alert(`Đã có lỗi xảy ra, nội dung lỗi: ${e.response!.data.detail}`)
+            }
         }
+        setLoading(false);
     };
 
     const handleGoToGame = () => {
