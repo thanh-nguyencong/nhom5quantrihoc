@@ -8,7 +8,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function isDev() {
-    return true
+    return false
 }
 
 export function serverUrl() {
